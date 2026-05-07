@@ -42,81 +42,44 @@ always_ff @(posedge clk or negedge rst_)
 // <add code for output decode>
 
 always_comb begin
+	{mem_rd, load_ir, halt, inc_pc, load_ac, load_pc, mem_wr} = '0;
+	next_state = INST_ADDR;
 	unique case(state)
 		INST_ADDR: begin
-			mem_rd = 1'b0;	
-			load_ir = 1'b0;
-			halt = 1'b0;
-			inc_pc = 1'b0;
-			load_ac = 1'b0;
-			load_pc = 1'b0;
-			mem_wr = 1'b0;
 			next_state = INST_FETCH;
 		end
 		INST_FETCH: begin
 			mem_rd = 1'b1;	
-			load_ir = 1'b0;
-			halt = 1'b0;
-			inc_pc = 1'b0;
-			load_ac = 1'b0;
-			load_pc = 1'b0;
-			mem_wr = 1'b0;
 			next_state = INST_LOAD;
 		end
 		INST_LOAD: begin
 			mem_rd = 1'b1;	
 			load_ir = 1'b1;
-			halt = 1'b0;
-			inc_pc = 1'b0;
-			load_ac = 1'b0;
-			load_pc = 1'b0;
-			mem_wr = 1'b0;
 			next_state = IDLE;			
 		end
 		IDLE: begin
 			mem_rd = 1'b1;	
 			load_ir = 1'b1;
-			halt = 1'b0;
-			inc_pc = 1'b0;
-			load_ac = 1'b0;
-			load_pc = 1'b0;
-			mem_wr = 1'b0;
 			next_state = OP_ADDR;			
 		end
 		OP_ADDR: begin
-			mem_rd = 1'b0;	
-			load_ir = 1'b0;
 			halt = logic'(opcode == HLT);
 			inc_pc = 1'b1;
-			load_ac = 1'b0;
-			load_pc = 1'b0;
-			mem_wr = 1'b0;
 			next_state = OP_FETCH;
 		end
 		OP_FETCH: begin
 			mem_rd = logic'((opcode == ADD) || (opcode == AND) || (opcode == XOR) || (opcode == LDA));
-			load_ir = 1'b0;
-			halt = 1'b0;
-			inc_pc = 1'b0;
-			load_ac = 1'b0;
-			load_pc = 1'b0;
-			mem_wr = 1'b0;
 			next_state = ALU_OP;
 		end
 		ALU_OP: begin
 			mem_rd = logic'((opcode == ADD) || (opcode == AND) || (opcode == XOR) || (opcode == LDA));
-			load_ir = 1'b0;
-			halt = 1'b0;
 			inc_pc = logic'((opcode == SKZ) && (zero == 1'b1));	
 			load_ac = logic'((opcode == ADD) || (opcode == AND) || (opcode == XOR) || (opcode == LDA));
 			load_pc = logic'(opcode == JMP);
-			mem_wr = 1'b0;
 			next_state = STORE;
 		end
 		STORE: begin
 			mem_rd = logic'((opcode == ADD) || (opcode == AND) || (opcode == XOR) || (opcode == LDA));
-			load_ir = 1'b0;
-			halt = 1'b0;
 			inc_pc = logic'(opcode == JMP);
 			load_ac = logic'((opcode == ADD) || (opcode == AND) || (opcode == XOR) || (opcode == LDA));
 			load_pc = logic'(opcode == JMP);
@@ -124,13 +87,6 @@ always_comb begin
 			next_state = INST_ADDR;
 		end
 		default: begin
-			mem_rd = 1'b0;	
-			load_ir = 1'b0;
-			halt = 1'b0;
-			inc_pc = 1'b0;
-			load_ac = 1'b0;
-			load_pc = 1'b0;
-			mem_wr = 1'b0;
 			next_state = INST_ADDR;
 		end
 

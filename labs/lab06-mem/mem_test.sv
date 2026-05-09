@@ -22,19 +22,18 @@ timeunit 1ns;
 timeprecision 1ns;
 
 // SYSTEMVERILOG: new data types - bit ,logic
-bit         debug = 1;
+bit debug = 1;
 logic [7:0] rdata;      // stores data read from memory for checking
 
 // Monitor Results
-  initial begin
-      $timeformat ( -9, 0, " ns", 9 );
+initial begin
+	$timeformat ( -9, 0, " ns", 9 );
 // SYSTEMVERILOG: Time Literals
-      #40000ns $display ( "MEMORY TEST TIMEOUT" );
-      $finish;
-    end
+	#40000ns $display ( "MEMORY TEST TIMEOUT" );
+	$finish;
+end
 
-initial
-  begin: memtest
+initial begin: memtest
   int error_status;
 
     $display("Clear Memory Test");
@@ -68,10 +67,29 @@ initial
    // print results of test
 
     $finish;
-  end
+
+end : memtest
 
 // add read_mem and write_mem tasks
+task read_mem(
+	
+);
+
+endtask : read_mem
+
+task write_mem(
+	input [4:0] addr,
+    input [7:0] data_out, // data FROM memory	
+	output [7:0] data_in // data TO memory
+);
+
+endtask : write_mem
 
 // add result print function
+function void printstatus(
+	
+);
+
+endfunction : printstatus
 
 endmodule

@@ -18,13 +18,13 @@
 ///////////////////////////////////////////////////////////////////////////
 
 module mem (
-        input        clk,
-	input        read,
-	input        write, 
-	input  logic [4:0] addr  ,
-	input  logic [7:0] data_in  ,
-        output logic [7:0] data_out
-	   );
+  input clk,
+	input read,
+	input write, 
+	input logic [4:0] addr,
+	input logic [7:0] data_in, 
+  output logic [7:0] data_out
+	);
 // SYSTEMVERILOG: timeunit and timeprecision specification
 timeunit 1ns;
 timeprecision 1ns;

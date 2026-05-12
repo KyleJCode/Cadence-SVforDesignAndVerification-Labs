@@ -71,24 +71,32 @@ initial begin: memtest
 end : memtest
 
 // add read_mem and write_mem tasks
-task read_mem(
-	
-);
-
+task read_mem(input [4:0] rd_addr, output [7:0] rd_data, input debug = 0);
+   @(negedge clk)
+   read <= 1'b1;
+   write <= 1'b0;
+   addr <= rd_addr;
+   @(negedge clk)
+   read <= 1'b0;
+   rd_data = data_out;
+   if(debug) 
+      $display("Debug Read: Addr Value = %0d, Data Value = %0h", rd_addr, rd_data);
 endtask : read_mem
 
-task write_mem(
-	input [4:0] addr,
-    input [7:0] data_out, // data FROM memory	
-	output [7:0] data_in // data TO memory
-);
-
+task write_mem(input [4:0] wr_addr, input [7:0] wr_data);
+   @(negedge clk)
+   addr <= wr_addr;
+   data_in <= wr_data;
+   write <= 1'b1;
+   read <= 1'b0;
+   @(negedge clk) // wait for reflection of changes. 
+   write <= 1'b0;
+   if(debug) 
+      $display("Debug Write: Addr Value = %0d, Data Value = %0h", wr_addr, wr_data);
 endtask : write_mem
 
 // add result print function
-function void printstatus(
-	
-);
+function void printstatus(input int status);
 
 endfunction : printstatus
 

@@ -13,7 +13,7 @@
 module testflop ();
 timeunit 1ns;
 
-logic reset;
+logic reset = 0; // start reset low
 logic [7:0] qin,qout;
 
 // ---- clock generator code begin------
@@ -28,8 +28,24 @@ always
 
 flipflop DUV(.*);
 
-<add clocking block>
+//<add clocking block>
+default clocking cb1 @(posedge clk);
+    default input #1step output #4ns;
+    input qout;
+    output reset, qin;
+endclocking
+//<add stimulus to drive clocking block>
 
-<add stimulus to drive clocking block>
+initial begin
+    cb1.qin <= '0;
+    ##1 cb1.reset <= 1'b1;
+    ##3 cb1.reset <= 1'b0;
+    for(int i = 1; i < 8; i++) begin
+        ##1 cb1.qin <= i;
+    end
+    ##2;
+    $finish();
+end
+
 
 endmodule

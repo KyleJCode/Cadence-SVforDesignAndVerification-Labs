@@ -10,13 +10,7 @@
 // 
 ///////////////////////////////////////////////////////////////////////////
 
-module mem_test ( input logic clk, 
-                  output logic read, 
-                  output logic write, 
-                  output logic [4:0] addr, 
-                  output logic [7:0] data_in,     // data TO memory
-                  input  wire [7:0] data_out     // data FROM memory
-                );
+module mem_test (m_intf.TB bus);
 // SYSTEMVERILOG: timeunit and timeprecision specification
 timeunit 1ns;
 timeprecision 1ns;
@@ -40,10 +34,10 @@ initial
     $display("Clear Memory Test");
 // SYSTEMVERILOG: enhanced for loop
     for (int i = 0; i< 32; i++)
-       write_mem (i, 0, debug);
+       bus.write_mem (i, 0, debug);
     for (int i = 0; i<32; i++)
       begin 
-       read_mem (i, rdata, debug);
+       bus.read_mem (i, rdata, debug);
        // check each memory location for data = 'h00
        error_status = checkit (i, rdata, 8'h00);
       end
@@ -53,10 +47,10 @@ initial
     $display("Data = Address Test");
 // SYSTEMVERILOG: enhanced for loop
     for (int i = 0; i< 32; i++)
-       write_mem (i, i, debug);
+       bus.write_mem (i, i, debug);
     for (int i = 0; i<32; i++)
       begin
-       read_mem (i, rdata, debug);
+       bus.read_mem (i, rdata, debug);
        // check each memory location for data = address
        error_status = checkit (i, rdata, i);
       end
@@ -65,32 +59,6 @@ initial
 
     $finish;
   end
-
-// SYSTEMVERILOG: default task input argument values
-task write_mem (input [4:0] waddr, input [7:0] wdata, input debug = 0);
-  @(negedge clk);
-  write <= 1;
-  read  <= 0;
-  addr  <= waddr;
-  data_in  <= wdata;
-  @(negedge clk);
-  write <= 0;
-  if (debug == 1)
-    $display("Write - Address:%d  Data:%h", waddr, wdata);
-endtask
-
-// SYSTEMVERILOG: default task input argument values
-task read_mem (input [4:0] raddr, output [7:0] rdata, input debug = 0);
-   @(negedge clk);
-   write <= 0;
-   read  <= 1;
-   addr  <= raddr;
-   @(negedge clk);
-   read <= 0;
-   rdata = data_out;
-   if (debug == 1) 
-     $display("Read  - Address:%d  Data:%h", raddr, rdata);
-endtask
 
 function int checkit (input [4:0] address,
                       input [7:0] actual, expected);

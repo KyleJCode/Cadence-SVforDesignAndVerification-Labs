@@ -17,22 +17,17 @@ module top;
 timeunit 1ns;
 timeprecision 1ns;
 
-// SYSTEMVERILOG: logic and bit data types
-bit         clk;
-wire       read;
-wire       write;
-wire [4:0] addr;
+// Clock Declaration
+logic clk = 0;
 
-wire [7:0] data_out;      // data_from_mem
-wire [7:0] data_in;       // data_to_mem
+// Bus declaration
+m_intf bus(clk);
 
-// SYSTEMVERILOG:: implicit .* port connections
-mem_test test (.*);
+// Memory test declaration
+mem_test test(bus.TB);
 
-// SYSTEMVERILOG:: implicit .name port connections
-mem memory ( .clk, .read, .write, .addr,
-              .data_in, .data_out
-            );
+// Memory design declaration
+mem memory(bus.MEM_D);
 
 always #5 clk = ~clk;
 endmodule

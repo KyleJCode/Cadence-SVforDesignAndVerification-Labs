@@ -15,4 +15,4 @@ module register(
     end
 
 
-endmodule
+endmodule : register

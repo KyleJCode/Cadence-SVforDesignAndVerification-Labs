@@ -22,4 +22,4 @@ module counter(
         end
     end
 
-endmodule
+endmodule : counter

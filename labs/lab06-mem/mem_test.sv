@@ -111,10 +111,10 @@ endfunction : printstatus
 
 function int check_func(input [4:0] address, input [7:0] actual, expected);
   if (actual !== expected) begin
-     $display("ERROR:  Address:%h  Data:%h  Expected:%h", address, actual, expected);
-     return 1;
+      $display("ERROR:  Address:%h  Data:%h  Expected:%h", address, actual, expected);
+      return 1;
   end
-   return 0;
+      return 0;
 endfunction: check_func
 
 endmodule

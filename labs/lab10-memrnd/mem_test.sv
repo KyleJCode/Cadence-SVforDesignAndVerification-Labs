@@ -5,21 +5,12 @@
 // Title       : Memory Testbench Module
 // Project     : SystemVerilog Training
 // Created     : 2013-4-8
-// Description : Defines the Memory interface testbench module with 
-// clk port, modport and methods
+// Description : Defines the Memory testbench module
 // Notes       :
-// Memory Specification: 8x32 memory
-//   Memory is 8-bits wide and address range is 0 to 31.
-//   Memory access is synchronous.
-//   The Memory is written on the positive edge of clk when "write" is high.
-//   Memory data is driven onto the "data" bus when "read" is high.
-//   The "read" and "write" signals should not be simultaneously high.
-//
+// 
 ///////////////////////////////////////////////////////////////////////////
 
-module mem_test ( 
-                  mem_intf.tb mbus
-                );
+module mem_test (m_intf.TB bus);
 // SYSTEMVERILOG: timeunit and timeprecision specification
 timeunit 1ns;
 timeprecision 1ns;
@@ -27,7 +18,8 @@ timeprecision 1ns;
 // SYSTEMVERILOG: new data types - bit ,logic
 bit         debug = 1;
 logic [7:0] rdata;      // stores data read from memory for checking
-
+logic [7:0] rand_data;
+logic [7:0] expected [0:31];
 // Monitor Results
   initial begin
       $timeformat ( -9, 0, " ns", 9 );
@@ -39,47 +31,53 @@ logic [7:0] rdata;      // stores data read from memory for checking
 initial
   begin: memtest
   int error_status;
+  error_status = 0;
 
     $display("Clear Memory Test");
 // SYSTEMVERILOG: enhanced for loop
     for (int i = 0; i< 32; i++)
-       mbus.write_mem (i, 0, debug);
+       bus.write_mem (i, 0, debug);
     for (int i = 0; i<32; i++)
       begin 
-       mbus.read_mem (i, rdata, debug);
+       bus.read_mem (i, rdata, debug);
        // check each memory location for data = 'h00
-       error_status = checkit (i, rdata, 8'h00);
+       error_status += checkit (i, rdata, 8'h00);
       end
 // SYSTEMVERILOG: void function
     printstatus(error_status);
 
-    $display("Data = Address Test");
-// SYSTEMVERILOG: enhanced for loop
-    for (int i = 0; i< 32; i++)
-       mbus.write_mem (i, i, debug);
-    for (int i = 0; i<32; i++)
+
+// SYSTEMVERILOG: void function
+   error_status = 0; 
+   $display("Random Data Test");
+   
+   for(int i=0; i<32; i++) begin
+      if(!std::randomize(rand_data) with { rand_data dist {[8'h41:8'h5a] := 80, [8'h61:8'h7a]:= 20}; })
       begin
-       mbus.read_mem (i, rdata, debug);
-       // check each memory location for data = address
-       error_status = checkit (i, rdata, i);
+         $display("Randomization Error Occurred.");
       end
-// SYSTEMVERILOG: void function
-    printstatus(error_status);
 
-    $finish;
+      expected[i] = rand_data;
+      bus.write_mem(i, rand_data, debug);
+   end
+   for(int i=0; i<32; i++) begin
+      bus.read_mem(i, rdata, debug);
+      error_status += checkit(i, rdata, expected[i]);
+   end
+   printstatus(error_status);
+
+   $finish;
   end
 
 function int checkit (input [4:0] address,
                       input [7:0] actual, expected);
-  static int error_status;   // static variable
   if (actual !== expected) begin
     $display("ERROR:  Address:%h  Data:%h  Expected:%h",
                 address, actual, expected);
-// SYSTEMVERILOG: post-increment
-     error_status++;
+      return 1;
    end
+   return 0;
 // SYSTEMVERILOG: function return
-   return (error_status);
 endfunction: checkit
 
 // SYSTEMVERILOG: void function

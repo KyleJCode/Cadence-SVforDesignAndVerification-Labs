@@ -2,33 +2,32 @@
 // (c) Copyright 2013 Cadence Design Systems, Inc. All Rights Reserved.
 //
 // File name   : top.sv
-// Title       : top Module for memory
+// Title       : top module for Memory labs 
 // Project     : SystemVerilog Training
 // Created     : 2013-4-8
-// Description : Defines the top module for memory with interface, clk port,
-// modport and methods
+// Description : Defines the top module for memory labs
 // Notes       :
-// Memory Lab - top-level
+// Memory Lab - top-level 
 // A top-level module which instantiates the memory and mem_test modules
-//
+// 
 ///////////////////////////////////////////////////////////////////////////
-
 
 module top;
 // SYSTEMVERILOG: timeunit and timeprecision specification
 timeunit 1ns;
 timeprecision 1ns;
 
-// SYSTEMVERILOG: logic and bit data types
+// Clock Declaration
 logic clk = 0;
 
+// Bus declaration
+m_intf bus(clk);
+
+// Memory test declaration
+mem_test test(bus.TB);
+
+// Memory design declaration
+mem memory(bus.MEM_D);
+
 always #5 clk = ~clk;
-
-// SYSTEMVERILOG: interface instance
-mem_intf mbus (clk);
-
-mem_test mtest (.mbus(mbus.tb));
-
-mem m1  (.mbus(mbus.mem));
-
 endmodule

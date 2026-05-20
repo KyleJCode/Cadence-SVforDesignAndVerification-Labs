@@ -1,4 +1,4 @@
-
+// Saving this lab for last, all other labs will be completed in order. This lab is optional. 
 module cpu_test; 
 timeunit 1ns;
 timeprecision 100ps;

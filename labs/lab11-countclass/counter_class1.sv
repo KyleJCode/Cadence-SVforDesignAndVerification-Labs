@@ -13,5 +13,21 @@
 module counterclass;
 
 // add counter class here    
+class counter;
+int count; 
+
+function new(input int count = 0);
+    this.count = count;
+endfunction
+
+function void load(input int count);
+    this.count = count;
+endfunction
+
+function int getcount(); 
+    return count;
+endfunction
+
+endclass
 
 endmodule

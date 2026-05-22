@@ -1,4 +1,4 @@
-// Adds setting/updating counter limits
+// Adds indications of roll-over and roll-under
 
 module counterclass;
     
@@ -50,29 +50,42 @@ module counterclass;
     endclass
 
     class upcounter extends counter;
+        bit carry;
         function new(input int count, input int min, input int max);
             super.new(count, min, max);
+            carry = 0;
         endfunction
 
         function void next();
-            if((count+1) > max) 
+            if((count+1) > max) begin
                 count = min;
-            else
+                carry = 1;
+            end
+            else begin
                 count++;
+                carry = 0;
+            end
             $display("Current Count: %0d", count);
         endfunction
     endclass
 
     class downcounter extends counter;
+        bit borrow;
+
         function new(input int count, input int min, input int max);
             super.new(count, min, max);
+            borrow = 0;
         endfunction
 
         function void next();
-            if((count-1) < min) 
+            if((count-1) < min) begin
                 count = max;
-            else
+                borrow = 1;
+            end
+            else begin
                 count--;
+                borrow = 0;
+            end
             $display("Current Count: %0d", count);
         endfunction
     endclass

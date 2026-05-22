@@ -1,3 +1,4 @@
+// Adds derived/extended classes
 module counterclass;
     
 class counter;

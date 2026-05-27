@@ -24,10 +24,27 @@ module mem_test (
 timeunit 1ns;
 timeprecision 1ns;
 
+class memc;
+  randc bit [4:0] addr;
+  rand bit [7:0] data;
+  
+  constraint c0_ASCII {data inside {[8'h20:8'h7F]};};
+  constraint c1_LETTER {data inside {[8'h41:8'h5A], [8'h61:8'h7A]};};
+  constraint c2_CASEDIST {data dist {[8'h41:8'h5A]:= 80, [8'h61:8'h7A]:= 20};};
+
+  function new(input int data = 0, int addr = 0);
+    this.data = data;
+    this.addr = addr;
+  endfunction
+
+endclass
+
 logic [7:0] rand_data; // stores data to write to memory
 logic [7:0] rdata;      // stores data read from memory for checking
 
 bit ok; // stores return value from randomize
+
+memc memd;
 
 // Monitor Results
   initial begin
@@ -36,6 +53,7 @@ bit ok; // stores return value from randomize
       #40000ns $display ( "MEMORY TEST TIMEOUT" );
       $finish;
     end
+
 
 initial
   begin: memtest
@@ -67,13 +85,14 @@ initial
 // SYSTEMVERILOG: void function
     printstatus(error_status);
 
+    memd = new();
     $display("Random Data Test");
     for (int i = 0; i< 32; i++)
     begin
-      ok = randomize(rand_data) with {rand_data dist {[8'h41:8'h5a]:=4, [8'h61:8'h7a]:=1};};
-       mbus.write_mem (i, rand_data, 1);
-       mbus.read_mem  (i, rdata, 1);
-       error_status = checkit (i, rdata, rand_data);
+       ok = memd.randomize();
+       mbus.write_mem (memd.addr, memd.data, 1);
+       mbus.read_mem  (memd.addr, rdata, 1);
+       error_status = checkit (memd.addr, rdata, memd.data);
     end
     printstatus(error_status);
 

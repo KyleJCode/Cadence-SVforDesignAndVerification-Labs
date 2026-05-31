@@ -33,7 +33,7 @@ typedef enum bit[1:0] {ascii, uc, lc, uclc} control_t;
 class mem_class;
   rand  bit [7:0] data;
   randc bit [4:0] addr;
-
+  virtual  mem_intf.tb mbus;
   control_t cntrl;
 
   constraint datadist { cntrl == ascii -> data inside {[8'h20:8'h7F]};
@@ -41,15 +41,41 @@ class mem_class;
                         cntrl == lc    -> data inside {[8'h61:8'h7A]};
                         cntrl == uclc  -> data dist {[8'h41:8'h5a]:=4, [8'h61:8'h7a]:=1};}
 
- function new (input int darg = 0, aarg = 0);
+ function new (input int darg = 0, int aarg = 0, virtual mem_intf.tb bus = null);
   data = darg;
   addr = aarg;
+  mbus = bus;
  endfunction
+
+   // SYSTEMVERILOG: default task input argument values
+  task write_mem (input [4:0] waddr, input [7:0] wdata, input debug);
+    @(negedge mbus.clk);
+    mbus.write <= 1;
+    mbus.read  <= 0;
+    mbus.addr  <= waddr;
+    mbus.data_in  <= wdata;
+    @(negedge mbus.clk);
+    mbus.write <= 0;
+    if (debug == 1)
+      $display("Write - Address:%d  Data:%h %c", waddr, wdata, wdata);
+  endtask
+  
+  // SYSTEMVERILOG: default task input argument values
+  task read_mem (input [4:0] raddr, output [7:0] rdata, input debug);
+     @(negedge mbus.clk);
+     mbus.write <= 0;
+     mbus.read  <= 1;
+     mbus.addr  <= raddr;
+     @(negedge mbus.clk);
+     mbus.read <= 0;
+     rdata = mbus.data_out;
+     if (debug == 1) 
+       $display("Read  - Address:%d  Data:%h %c", raddr, rdata, rdata);
+  endtask
 
 endclass
 
 mem_class memrnd;
-
 
 // Monitor Results
   initial begin
@@ -62,14 +88,15 @@ mem_class memrnd;
 initial
   begin: memtest
   int error_status;
+  memrnd = new(0,0, mbus);
 
     $display("Clear Memory Test");
 // SYSTEMVERILOG: enhanced for loop
     for (int i = 0; i< 32; i++)
-       mbus.write_mem (i, 0, 0);
+       memrnd.write_mem (i, 0, 0);
     for (int i = 0; i<32; i++)
       begin 
-       mbus.read_mem (i, rdata, 0);
+       memrnd.read_mem (i, rdata, 0);
        // check each memory location for data = 'h00
        error_status = checkit (i, rdata, 8'h00);
       end
@@ -79,25 +106,24 @@ initial
     $display("Data = Address Test");
 // SYSTEMVERILOG: enhanced for loop
     for (int i = 0; i< 32; i++)
-       mbus.write_mem (i, i,0);
+       memrnd.write_mem (i, i,0);
     for (int i = 0; i<32; i++)
       begin
-       mbus.read_mem (i, rdata,0);
+       memrnd.read_mem (i, rdata,0);
        // check each memory location for data = address
        error_status = checkit (i, rdata, i);
       end
 // SYSTEMVERILOG: void function
     printstatus(error_status);
 
-    memrnd = new(0,0);
 
     $display("Random Data Test - ASCII");
     memrnd.cntrl = ascii;
     for (int i = 0; i< 32; i++)
     begin
       ok = memrnd.randomize();
-       mbus.write_mem (memrnd.addr, memrnd.data, 1);
-       mbus.read_mem  (memrnd.addr, rdata, 1);
+       memrnd.write_mem (memrnd.addr, memrnd.data, 1);
+       memrnd.read_mem  (memrnd.addr, rdata, 1);
        error_status = checkit (memrnd.addr, rdata, memrnd.data);
     end
     printstatus(error_status);
@@ -107,8 +133,8 @@ initial
     for (int i = 0; i< 32; i++)
     begin
       ok = memrnd.randomize();
-       mbus.write_mem (memrnd.addr, memrnd.data, 1);
-       mbus.read_mem  (memrnd.addr, rdata, 1);
+       memrnd.write_mem (memrnd.addr, memrnd.data, 1);
+       memrnd.read_mem  (memrnd.addr, rdata, 1);
        error_status = checkit (memrnd.addr, rdata, memrnd.data);
     end
     printstatus(error_status);
@@ -118,8 +144,8 @@ initial
     for (int i = 0; i< 32; i++)
     begin
       ok = memrnd.randomize();
-       mbus.write_mem (memrnd.addr, memrnd.data, 1);
-       mbus.read_mem  (memrnd.addr, rdata, 1);
+       memrnd.write_mem (memrnd.addr, memrnd.data, 1);
+       memrnd.read_mem  (memrnd.addr, rdata, 1);
        error_status = checkit (memrnd.addr, rdata, memrnd.data);
     end
     printstatus(error_status);
@@ -129,8 +155,8 @@ initial
     for (int i = 0; i< 32; i++)
     begin
       ok = memrnd.randomize();
-       mbus.write_mem (memrnd.addr, memrnd.data, 1);
-       mbus.read_mem  (memrnd.addr, rdata, 1);
+       memrnd.write_mem (memrnd.addr, memrnd.data, 1);
+       memrnd.read_mem  (memrnd.addr, rdata, 1);
        error_status = checkit (memrnd.addr, rdata, memrnd.data);
     end
     printstatus(error_status);

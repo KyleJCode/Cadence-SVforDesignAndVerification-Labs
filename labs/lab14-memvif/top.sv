@@ -26,9 +26,11 @@ always #5 clk = ~clk;
 
 // SYSTEMVERILOG: interface instance
 mem_intf mbus (clk);
+mem_intf mbus2 (clk);
 
-mem_test mtest (.mbus(mbus.tb));
+mem_test mtest (.mbus(mbus.tb), .mbus2(mbus2.tb));
 
 mem m1  (.mbus(mbus.mem));
+mem m2 (.mbus(mbus2.mem));
 
 endmodule

@@ -17,14 +17,15 @@
 ///////////////////////////////////////////////////////////////////////////
 
 module mem_test ( 
-                  mem_intf.tb mbus
+                  mem_intf.tb mbus,
+                  mem_intf.tb mbus2
                 );
 // SYSTEMVERILOG: timeunit and timeprecision specification
 timeunit 1ns;
 timeprecision 1ns;
 
 logic [7:0] rand_data; // stores data to write to memory
-logic [7:0] rdata;      // stores data read from memory for checking
+logic [7:0] rdata; // stores data read from memory for checking
 
 bit ok; // stores return value from randomize
 
@@ -73,6 +74,9 @@ class mem_class;
        $display("Read  - Address:%d  Data:%h %c", raddr, rdata, rdata);
   endtask
 
+  task configure (input virtual mem_intf.tb bus);
+    mbus = bus;
+  endtask
 endclass
 
 mem_class memrnd;
@@ -85,37 +89,9 @@ mem_class memrnd;
       $finish;
     end
 
-initial
-  begin: memtest
-  int error_status;
-  memrnd = new(0,0, mbus);
-
-    $display("Clear Memory Test");
-// SYSTEMVERILOG: enhanced for loop
-    for (int i = 0; i< 32; i++)
-       memrnd.write_mem (i, 0, 0);
-    for (int i = 0; i<32; i++)
-      begin 
-       memrnd.read_mem (i, rdata, 0);
-       // check each memory location for data = 'h00
-       error_status = checkit (i, rdata, 8'h00);
-      end
-// SYSTEMVERILOG: void function
-    printstatus(error_status);
-
-    $display("Data = Address Test");
-// SYSTEMVERILOG: enhanced for loop
-    for (int i = 0; i< 32; i++)
-       memrnd.write_mem (i, i,0);
-    for (int i = 0; i<32; i++)
-      begin
-       memrnd.read_mem (i, rdata,0);
-       // check each memory location for data = address
-       error_status = checkit (i, rdata, i);
-      end
-// SYSTEMVERILOG: void function
-    printstatus(error_status);
-
+initial begin: memtest
+    int error_status;
+    memrnd = new(0,0, mbus);
 
     $display("Random Data Test - ASCII");
     memrnd.cntrl = ascii;
@@ -160,6 +136,54 @@ initial
        error_status = checkit (memrnd.addr, rdata, memrnd.data);
     end
     printstatus(error_status);
+
+
+    // Second mem test
+    memrnd.configure(mbus2);
+    $display("Random Data Test - ASCII");
+    memrnd.cntrl = ascii;
+    for (int i = 0; i< 32; i++)
+    begin
+      ok = memrnd.randomize();
+       memrnd.write_mem (memrnd.addr, memrnd.data, 1);
+       memrnd.read_mem  (memrnd.addr, rdata, 1);
+       error_status = checkit (memrnd.addr, rdata, memrnd.data);
+    end
+    printstatus(error_status);
+
+    $display("Random Data Test - Upper case");
+    memrnd.cntrl = uc;
+    for (int i = 0; i< 32; i++)
+    begin
+      ok = memrnd.randomize();
+       memrnd.write_mem (memrnd.addr, memrnd.data, 1);
+       memrnd.read_mem  (memrnd.addr, rdata, 1);
+       error_status = checkit (memrnd.addr, rdata, memrnd.data);
+    end
+    printstatus(error_status);
+
+    $display("Random Data Test Lower Case");
+    memrnd.cntrl = lc;
+    for (int i = 0; i< 32; i++)
+    begin
+      ok = memrnd.randomize();
+       memrnd.write_mem (memrnd.addr, memrnd.data, 1);
+       memrnd.read_mem  (memrnd.addr, rdata, 1);
+       error_status = checkit (memrnd.addr, rdata, memrnd.data);
+    end
+    printstatus(error_status);
+
+    $display("Random Data Test - Upper/Lower case distribution");
+    memrnd.cntrl = uclc;
+    for (int i = 0; i< 32; i++)
+    begin
+      ok = memrnd.randomize();
+       memrnd.write_mem (memrnd.addr, memrnd.data, 1);
+       memrnd.read_mem  (memrnd.addr, rdata, 1);
+       error_status = checkit (memrnd.addr, rdata, memrnd.data);
+    end
+    printstatus(error_status);
+
 
     $finish;
   end

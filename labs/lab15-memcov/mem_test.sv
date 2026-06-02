@@ -37,9 +37,9 @@ class mem_class;
   control_t cntrl;
 
   constraint datadist { cntrl == ascii -> data inside {[8'h20:8'h7F]};
-                        cntrl == uc    -> data inside {[8'h41:8'h5A]};
-                        cntrl == lc    -> data inside {[8'h61:8'h7A]};
-                        cntrl == uclc  -> data dist {[8'h41:8'h5a]:=4, [8'h61:8'h7a]:=1};}
+                        cntrl == uc -> data inside {[8'h41:8'h5A]};
+                        cntrl == lc -> data inside {[8'h61:8'h7A]};
+                        cntrl == uclc -> data dist {[8'h41:8'h5a]:=4, [8'h61:8'h7a]:=1};}
 
  function new (input int darg = 0, aarg = 0);
   data = darg;
@@ -50,6 +50,21 @@ endclass
 
 mem_class memrnd;
 
+covergroup cg_mem @(posedge mbus.clk);
+  c1_addrs : coverpoint memrnd.addr;
+  c2_din : coverpoint mbus.data_in {
+    bins uc = {[8'h41:8'h5a]};
+    bins lc = {[8'h61:8'h7a]};
+    bins other = default;
+  }
+  c3_dout : coverpoint mbus.data_out {
+    bins uc = {[8'h41:8'h5a]};
+    bins lc = {[8'h61:8'h7a]};
+    bins other = default;
+  }
+endgroup
+
+cg_mem cg_inst;
 
 // Monitor Results
   initial begin
@@ -90,6 +105,7 @@ initial
     printstatus(error_status);
 
     memrnd = new(0,0);
+    cg_inst = new();
 
     $display("Random Data Test - ASCII");
     memrnd.cntrl = ascii;

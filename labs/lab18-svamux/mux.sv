@@ -36,8 +36,22 @@ always @(posedge clock)
 // assertions go here
 //#### edit ###
 
+property SEL1;
+   @(posedge clock) (sel1 == 1'b1) |=> (mux_op == $past(ip1));   
+endproperty
 
 
+property SEL2;
+   @(posedge clock) (sel2 == 1'b1) |=> (mux_op == $past(ip2));   
+endproperty
 
+
+property SEL3;
+   @(posedge clock) (sel3 == 1'b1) |=> (mux_op == $past(ip3));   
+endproperty
+
+ASSERT1: assert property(SEL1);
+ASSERT2: assert property(SEL2);
+ASSERT3: assert property(SEL3);
 //#### end of edit ###
 endmodule

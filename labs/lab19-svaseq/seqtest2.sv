@@ -106,7 +106,12 @@ endproperty
 
 ASSERT1: assert property(SIMPLE_SEQ);
 
+property COMPLEX_SEQ;
+    @(negedge CLK) disable iff(X)
+        (C ##1 B[*1:3] ## A) |=> (J[*4] ##1 K);
+endproperty
 
+ASSERT2: assert property(COMPLEX_SEQ);
 //#### END OF EDIT ###
 
 endmodule

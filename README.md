@@ -1,0 +1,1 @@
+This certificate course has been completed. Labs 1 thorugh 20 have been completed and verified correct through EDA playground. 
